@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -84,10 +83,9 @@ func (taskController TaskController) CreateTask(res http.ResponseWriter, req *ht
 	json.NewDecoder(req.Body).Decode(&newTask)
 	isTaskComplete := taskMiddlewares.ValidateEntry(newTask, res)
 	if !isTaskComplete {
-		utils.FormatMessage("Los campos Name, Description y User_id son obligatorios", http.StatusBadRequest, res)
+		utils.FormatMessage("Recuerda que los campos Name, Description, Date y User_id son obligatorios y que Date debe tener el formato AAAA-MM-DD", http.StatusBadRequest, res)
 	} else {
 		newTask.Is_done = false
-		newTask.Date = time.Now().String()
 
 		// Add to DB
 		result, err := taskController.DB.Collection("tasks").InsertOne(taskController.ctx, newTask)
@@ -147,7 +145,7 @@ func (taskController TaskController) UpdateTask(res http.ResponseWriter, req *ht
 		json.NewDecoder(req.Body).Decode(&newTask)
 		taskCompleted := taskMiddlewares.ValidateUpdateEntry(task, newTask, res)
 		if taskCompleted.Name == "" {
-			utils.FormatMessage("Debe modificar al menos uno de estos campos: Name, Description, User_id", http.StatusBadRequest, res)
+			utils.FormatMessage("Debe modificar al menos uno de estos campos: Name, Description, Date. Y Date debe tener el formato AAAA-MM-DD", http.StatusBadRequest, res)
 			return
 		} else {
 			update := bson.M{
@@ -155,6 +153,7 @@ func (taskController TaskController) UpdateTask(res http.ResponseWriter, req *ht
 					// "user_id": taskCompleted.User_id,
 					"name":        taskCompleted.Name,
 					"description": taskCompleted.Description,
+					"date":        taskCompleted.Date,
 				},
 			}
 			result, err := taskController.DB.Collection("tasks").UpdateOne(taskController.ctx, filter, update)

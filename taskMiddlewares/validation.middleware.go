@@ -4,19 +4,16 @@ import (
 	"dia_tasks_ms/dtos"
 	"dia_tasks_ms/models"
 	"net/http"
+	"regexp"
 )
 
 func ValidateEntry(newTask models.Task, res http.ResponseWriter) bool {
-
-	// Crea una instancia vacía de TaskEntryDTO
-	dto := dtos.TaskEntryDTO{
-		Name:        newTask.Name,
-		Description: newTask.Description,
-		User_id:     newTask.User_id,
-	}
-
+	dateRegex := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 	// Verifica si los campos requeridos existen y contienen datos
-	if dto.Name == "" || dto.Description == "" || dto.User_id == "" {
+	if newTask.Name == "" || newTask.Description == "" || newTask.User_id == "" {
+		return false
+	}
+	if !dateRegex.MatchString(newTask.Date) {
 		return false
 	}
 	return true
@@ -24,12 +21,13 @@ func ValidateEntry(newTask models.Task, res http.ResponseWriter) bool {
 }
 
 func ValidateUpdateEntry(prevTask models.Task, newTask dtos.TaskEntryDTO, res http.ResponseWriter) models.Task {
+	dateRegex := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 	// dto := dtos.TaskEntryDTO{}
 	task := models.Task{
 		User_id: prevTask.User_id,
 		Is_done: prevTask.Is_done,
 	}
-	if newTask.Name == "" && newTask.Description == "" {
+	if newTask.Name == "" && newTask.Description == "" && newTask.Date == "" || !dateRegex.MatchString(newTask.Date) {
 		return task
 	}
 	if newTask.Name == "" {
@@ -42,6 +40,12 @@ func ValidateUpdateEntry(prevTask models.Task, newTask dtos.TaskEntryDTO, res ht
 		task.Description = prevTask.Description
 	} else {
 		task.Description = newTask.Description
+	}
+
+	if newTask.Date == "" {
+		task.Date = prevTask.Date
+	} else {
+		task.Date = newTask.Date
 	}
 	return task
 }

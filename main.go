@@ -24,7 +24,7 @@ func main() {
 	router.DELETE("/task/:user_id/:id", taskController.DeleteTask)
 	router.PUT("/task/:user_id/:id", taskController.UpdateTask)
 	router.PATCH("/task/:user_id/:id", taskController.UpdateTaskIsDone)
-	http.ListenAndServe("localhost:9000", router)
+	http.ListenAndServe("0.0.0.0:9000", router)
 }
 
 func getDBSession() (*mongo.Database, context.Context) {
