@@ -86,6 +86,7 @@ func (taskController TaskController) CreateTask(res http.ResponseWriter, req *ht
 		utils.FormatMessage("Recuerda que los campos Name, Description, Date y User_id son obligatorios y que Date debe tener el formato AAAA-MM-DD", http.StatusBadRequest, res)
 	} else {
 		newTask.Is_done = false
+		// comment
 
 		// Add to DB
 		result, err := taskController.DB.Collection("tasks").InsertOne(taskController.ctx, newTask)
